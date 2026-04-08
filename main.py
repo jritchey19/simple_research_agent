@@ -15,28 +15,34 @@ if __name__ == "__main__":
         description="A simple agent that will go out and research a topic"
     )
 
-    parser.add_argument("topic", help="Topic to research about.")
+    parser.add_argument("-k", "--keyword", help="Keyword for agent role.", required=True)
+    parser.add_argument("-s", "--subject", help="Subject to research about.", required=True)
     parser.add_argument("-o", "--output", help="path to output.")
+    parser.add_argument("-t", "--temperature", type=float, default=0.7, help="Set the temperature of the model")
+    parser.add_argument("-m", "--max_tokens", type=int, default=8192, help="Sets the maximum number of tokens available to the model")
 
     args = parser.parse_args()
 
     # Set vars to arguments
-    topic = args.topic
-    output = args.output
+    KEYWORD = args.keyword
+    SUBJECT = args.subject
+    TEMPERATURE = args.temperature
+    MAX_TOKENS = args.max_tokens
+    OUTPUT = args.output
 
     # Setup our llm to use grok
     grok_llm = LLM(
       model=os.getenv("MODEL"),
       api_key=os.getenv("XAI_API_KEY"),
-      temperature=0.7,
-      max_tokens=8192,
+      temperature=TEMPERATURE,
+      max_tokens=MAX_TOKENS,
     )
     
     # This is our agent and how it should do research.
     researcher = Agent(
-        role=f"{topic} Senior Researcher",
-        goal=f"Search the internet to understand {topic} and report acurate findings",
-        backstory=f"You a senior {topic} data researcher who is thourgh when researching a {topic}. You always use two or more sources when citing a fact to ensure accuracy and cite those sources. When you cant you always mark this as a single source and cite it. When you give an opinion you let the user know with [OPINION] before the thought.",
+        role=f"{KEYWORD} Senior Researcher",
+        goal=f"Search the internet to understand {SUBJECT} and report acurate findings",
+        backstory=f"You a senior {KEYWORD} data researcher who is thourgh when researching {SUBJECT}. You always use two or more sources when citing a fact to ensure accuracy and cite those sources. When you cant you always mark this as a single source with [NotVerified] and cite it. When you give an opinion you let the user know with [OPINION] before the thought.",
         llm=grok_llm,
         verbose=True
     )
@@ -44,7 +50,7 @@ if __name__ == "__main__":
     # The task that we want the Agent to do.
     task = Task(
         description=f"""
-        Conduct thorough research about {topic}. Use web search to find current,
+        Conduct thorough research about {SUBJECT}. Use web search to find current,
         credible information. The current year is 2026.
         """,
         expected_output="""
@@ -61,9 +67,7 @@ if __name__ == "__main__":
     result = crew.kickoff()
 
     # If output flag was given and file, write to disk.
-    if output:
-        with open(output, "w") as f:
+    if OUTPUT:
+        with open(OUTPUT, "w") as f:
             f.write(result.raw)
 
-    # Print the results.
-    print(result.raw)

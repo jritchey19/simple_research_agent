@@ -11,4 +11,4 @@ wheels/
 .env
 
 uv.lock
-wind_turbine.md
+output/
