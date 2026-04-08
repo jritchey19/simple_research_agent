@@ -6,8 +6,10 @@ from dotenv import load_dotenv
 
 if __name__ == "__main__":
 
+    # Load our .env file
     load_dotenv()
 
+    # Setup parser to except a topic and and optional output flag
     parser = argparse.ArgumentParser(
         prog="Research Agent",
         description="A simple agent that will go out and research a topic"
@@ -18,9 +20,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Set vars to arguments
     topic = args.topic
     output = args.output
 
+    # Setup our llm to use grok
     grok_llm = LLM(
       model=os.getenv("MODEL"),
       api_key=os.getenv("XAI_API_KEY"),
@@ -28,6 +32,7 @@ if __name__ == "__main__":
       max_tokens=8192,
     )
     
+    # This is our agent and how it should do research.
     researcher = Agent(
         role=f"{topic} Senior Researcher",
         goal=f"Search the internet to understand {topic} and report acurate findings",
@@ -36,6 +41,7 @@ if __name__ == "__main__":
         verbose=True
     )
 
+    # The task that we want the Agent to do.
     task = Task(
         description=f"""
         Conduct thorough research about {topic}. Use web search to find current,
@@ -48,10 +54,16 @@ if __name__ == "__main__":
         agent=researcher,
     )
 
+    # Setup our crew with the agent and the task to work on.
     crew = Crew(agents=[researcher],tasks=[task])
     
+    # Conduct research.
     result = crew.kickoff()
+
+    # If output flag was given and file, write to disk.
     if output:
         with open(output, "w") as f:
             f.write(result.raw)
+
+    # Print the results.
     print(result.raw)
