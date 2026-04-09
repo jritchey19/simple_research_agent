@@ -21,6 +21,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", help="path to output.")
     parser.add_argument("-t", "--temperature", type=float, default=0.7, help="Set the temperature of the model")
     parser.add_argument("-m", "--max_tokens", type=int, default=8192, help="Sets the maximum number of tokens available to the model")
+    parser.add_argument("-v", "--verbose", action='store_true', help="Enable verbose on agents.")
 
     args = parser.parse_args()
 
@@ -30,6 +31,10 @@ if __name__ == "__main__":
     TEMPERATURE = args.temperature
     MAX_TOKENS = args.max_tokens
     OUTPUT = args.output
+    if args.verbose:
+        VERBOSE = True
+    else:
+        VERBOSE = False
 
     # Setup our llm to use grok
     grok_llm = LLM(
@@ -42,14 +47,14 @@ if __name__ == "__main__":
     r_role = f"Academic Research Specialist in {KEYWORD}."
     r_goal = "Discover and synthesize cutting-edge research, identifying key trends, methodologies, and findings while evaluating the quality and reliability of sources by verify with two or more sources and citing them accurately. Ensure to be descriptive and fully fleshout the topic with details like,'How does the topic work, what are known issues, who came up with the topic, are there problems the topic solves, what solutions does this topic have.'"
     r_backstory = f"You are a 20+ year veteran researcher in the academic field who has recently shifted focus on {KEYWORD}. You have strived to be a subject-matter-expert on this topic and have put your arts of digital research that you have master to this task. You've worked with research teams at prestigious universities and know how to navigate academic databases, evaluate research quality, and synthesize findings across disciplines. You're methodical in your approach, always cross-referencing information and tracing claims to primary sources before drawing conclusions."
-    myResearchCrew.researcher(r_role, r_goal, r_backstory, grok_llm, verb=True)
+    myResearchCrew.researcher(r_role, r_goal, r_backstory, grok_llm, verb=VERBOSE)
     
     w_role = "Technical Writer"
     w_goal = "Write professional documentation that is clear, concise, descriptive and user-friendly with mermaid diagrams that explain complex information simply."
     w_backstory = "As a seasoned writer who has written for some of the biggest Academic journals, you strive to make good documentation on the research given to you. You keep the document on track and truthful while making hard-to-digest information palitable and understandable. You prefer clean documentation that flows easily from one paragraph to the next while describing the subject in full to the reader."
-    myResearchCrew.writer(w_role, w_goal, w_backstory, grok_llm, verb=True)
+    myResearchCrew.writer(w_role, w_goal, w_backstory, grok_llm, verb=VERBOSE)
 
-    myResearchCrew.editor(grok_llm, verb=True)
+    myResearchCrew.editor(grok_llm, verb=VERBOSE)
 
     t1_desc = SUBJECT
     t1_expected_output = "A comprehensive research document that clearly explains the subject with cites sources, quotes from those source with line numbers or paragraphs for validation, details clearly explained and examples."
